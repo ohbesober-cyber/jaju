@@ -70,20 +70,19 @@ button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent); out
 .list{display:flex; flex-direction:column; gap:12px}
 .list .card{grid-column:1 / -1}
 label{font-size:.8125rem; color:var(--muted)}
-/* 분할 화면·팝업 창처럼 높이가 낮을 때: 제목 줄을 없애고, 문구를 글자 길이만큼만 차지하는 작은 칩으로 줄지어 깐다 */
+/* 작게 보기: 창 높이가 낮으면 자동으로, 또는 "작게 보기"를 켜 두면 창 크기와 상관없이 항상.
+   제목 줄을 없애고, 문구를 글자 길이만큼만 차지하는 작은 칩으로 줄지어 깐다 */
 .mini-edit{display:none}
-@media (max-height:520px){
-  .wrap{padding:18px 6px 6px; gap:4px}   /* 위쪽 여백: 분할 화면 창의 손잡이가 문구를 가리지 않게 */
-  header, .hint, .foot{display:none}
-  .list{display:flex; flex-direction:row; flex-wrap:wrap; gap:4px}
-  .phrase{display:block; width:auto; max-width:100%; flex:0 1 auto; padding:4px 9px; min-height:30px; border-radius:8px; font-size:.875rem; line-height:1.55; box-shadow:none}
-  .phrase .tx{display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .phrase .st{display:none}
-  .list .phrase.done{background:var(--good); color:var(--surface)}
-  .mini-edit{display:block; font:inherit; font-size:.75rem; font-weight:600; color:var(--muted); background:transparent; border:1px dashed var(--line); border-radius:8px; padding:4px 9px; min-height:30px; cursor:pointer}
-  .list .card{flex:1 1 100%}
-  .note{padding:4px 8px; font-size:.75rem}
-}
+.compact .wrap{padding:18px 6px 6px; gap:4px}   /* 위쪽 여백: 분할 화면 창의 손잡이가 문구를 가리지 않게 */
+.compact header, .compact .hint, .compact .foot{display:none}
+.compact .list{display:flex; flex-direction:row; flex-wrap:wrap; gap:4px}
+.compact .phrase{display:block; width:auto; max-width:100%; flex:0 1 auto; padding:4px 9px; min-height:30px; border-radius:8px; font-size:.875rem; line-height:1.55; box-shadow:none}
+.compact .phrase .tx{display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.compact .phrase .st{display:none}
+.compact .list .phrase.done{background:var(--good); color:var(--surface)}
+.compact .mini-edit{display:block; font:inherit; font-size:.75rem; font-weight:600; color:var(--muted); background:transparent; border:1px dashed var(--line); border-radius:8px; padding:4px 9px; min-height:30px; cursor:pointer}
+.compact .list .card{flex:1 1 100%}
+.compact .note{padding:4px 8px; font-size:.75rem}
 </style>
 </head>
 <body>
@@ -96,6 +95,12 @@ label{font-size:.8125rem; color:var(--muted)}
                   '(예시) 입금 확인했습니다. 감사합니다.', '(예시) 죄송하지만 일정 변경이 가능할까요?'];
 
   function $(id) { return document.getElementById(id); }
+  var forced = false, mq = window.matchMedia ? window.matchMedia('(max-height:520px)') : null;
+  try { forced = localStorage.getItem('phrases-compact') === '1'; } catch (e) {}
+  function applyMode() { document.body.classList.toggle('compact', forced || !!(mq && mq.matches)); }
+  function setForced(v) { forced = v; try { localStorage.setItem('phrases-compact', v ? '1' : '0'); } catch (e) {} applyMode(); render(); }
+  if (mq) { if (mq.addEventListener) mq.addEventListener('change', applyMode); else if (mq.addListener) mq.addListener(applyMode); }
+  window.addEventListener('resize', applyMode);
   function rid() { return 'p' + Math.random().toString(36).slice(2, 10); }
   function clean(d) {
     return (d && Array.isArray(d.items) ? d.items : []).slice(0, MAX).map(function (x) {
@@ -178,7 +183,9 @@ label{font-size:.8125rem; color:var(--muted)}
         if (S.manual === it.id) list.appendChild(h('div', { class: 'card' }, [h('label', { for: 'manual', text: '직접 복사할 문구' }), h('textarea', { id: 'manual', readonly: true, value: it.text })]));
       });
       list.appendChild(h('button', { class: 'mini-edit', type: 'button', id: 'edit-mini', text: '편집', onclick: function () { S.edit = true; S.copied = null; S.manual = null; S.note = ''; render(); } }));
+      if (forced) list.appendChild(h('button', { class: 'mini-edit', type: 'button', id: 'compact-off', text: '크게', onclick: function () { setForced(false); } }));
       out.push(h('div', { class: 'row foot' }, [h('button', { class: 'btn', type: 'button', id: 'edit-on', text: '문구 편집', onclick: function () { S.edit = true; S.copied = null; S.manual = null; S.note = ''; render(); } }),
+        h('button', { class: 'btn', type: 'button', id: 'compact-on', text: '작게 보기', onclick: function () { setForced(true); } }),
         h('span', { class: 'sub', text: S.items.length + ' / ' + MAX + '개' })]));
       return out;
     }
@@ -207,6 +214,7 @@ label{font-size:.8125rem; color:var(--muted)}
     S.ready = true; render();
   }
   function init() { startLocal(); }
+  applyMode();
   render();
   init();
   if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });
