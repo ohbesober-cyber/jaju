@@ -1,6 +1,6 @@
 // 자주 쓰는 말: 앱 파일을 기기에 보관해 인터넷 없이도 열리게 한다.
 // 파일을 고쳐서 다시 올릴 때는 아래 버전 숫자를 올려 주세요.
-const CACHE = 'phrases-v2';
+const CACHE = 'phrases-v3';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './icon-180.png'];
 
 self.addEventListener('install', (e) => {
