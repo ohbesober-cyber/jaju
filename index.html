@@ -73,7 +73,7 @@ label{font-size:.8125rem; color:var(--muted)}
 /* 분할 화면·팝업 창처럼 높이가 낮을 때: 제목 줄을 없애고, 문구를 글자 길이만큼만 차지하는 작은 칩으로 줄지어 깐다 */
 .mini-edit{display:none}
 @media (max-height:520px){
-  .wrap{padding:5px 6px 6px; gap:4px}
+  .wrap{padding:18px 6px 6px; gap:4px}   /* 위쪽 여백: 분할 화면 창의 손잡이가 문구를 가리지 않게 */
   header, .hint, .foot{display:none}
   .list{display:flex; flex-direction:row; flex-wrap:wrap; gap:4px}
   .phrase{display:block; width:auto; max-width:100%; flex:0 1 auto; padding:4px 9px; min-height:30px; border-radius:8px; font-size:.875rem; line-height:1.55; box-shadow:none}
